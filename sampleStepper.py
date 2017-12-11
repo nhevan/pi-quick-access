@@ -3,14 +3,15 @@ import time
  
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
-coil_A_1_pin = 4 # pink
-coil_A_2_pin = 17 # orange
-coil_B_1_pin = 23 # blue
-coil_B_2_pin = 24 # yellow
+coil_A_1_pin = 17 # orange
+coil_A_2_pin = 24 # yellow
+coil_B_1_pin = 4  # pink
+coil_B_2_pin = 23 # blue
  
 # adjust if different
-StepCount = 8
-Seq = range(0, StepCount)
+current_phase = 0
+StepCount = 1
+Seq = range(0, 8)
 Seq[0] = [0,1,0,0]
 Seq[1] = [0,1,0,1]
 Seq[2] = [0,0,0,1]
@@ -20,13 +21,13 @@ Seq[5] = [1,0,1,0]
 Seq[6] = [0,0,1,0]
 Seq[7] = [0,1,1,0]
  
-GPIO.setup(enable_pin, GPIO.OUT)
+# GPIO.setup(enable_pin, GPIO.OUT)
 GPIO.setup(coil_A_1_pin, GPIO.OUT)
 GPIO.setup(coil_A_2_pin, GPIO.OUT)
 GPIO.setup(coil_B_1_pin, GPIO.OUT)
 GPIO.setup(coil_B_2_pin, GPIO.OUT)
  
-GPIO.output(enable_pin, 1)
+# GPIO.output(enable_pin, 1)
  
 def setStep(w1, w2, w3, w4):
     GPIO.output(coil_A_1_pin, w1)
@@ -35,16 +36,26 @@ def setStep(w1, w2, w3, w4):
     GPIO.output(coil_B_2_pin, w4)
  
 def forward(delay, steps):
+    global current_phase
     for i in range(steps):
-        for j in range(StepCount):
-            setStep(Seq[j][0], Seq[j][1], Seq[j][2], Seq[j][3])
+        while True:
+            setStep(Seq[current_phase][0], Seq[current_phase][1], Seq[current_phase][2], Seq[current_phase][3])
+            current_phase += 1
+            if current_phase >  7:
+                current_phase = 0
             time.sleep(delay)
+            break
  
 def backwards(delay, steps):
+    global current_phase
     for i in range(steps):
-        for j in reversed(range(StepCount)):
-            setStep(Seq[j][0], Seq[j][1], Seq[j][2], Seq[j][3])
+        while True:
+            setStep(Seq[current_phase][0], Seq[current_phase][1], Seq[current_phase][2], Seq[current_phase][3])
+            current_phase -= 1
+            if current_phase < 0:
+                current_phase = 7
             time.sleep(delay)
+            break
  
 if __name__ == '__main__':
     while True:
